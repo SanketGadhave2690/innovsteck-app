@@ -157,7 +157,7 @@ body.tb .app{padding-bottom:88px}
 // ===== SETTINGS =====
 var WEBSITE="https://claude.ai/artifact/DwMFQDHemRv7VgjSCc5JWi"; // replace with your live website link
 var KEY="innovsteck_user";
-var BACKEND_URL=""; // REQUIRED: paste your Google Apps Script Web app URL here (it sends the real OTP emails)
+var BACKEND_URL="https://script.google.com/macros/s/AKfycbzDMA34uYlZqW5G29_s79anto6XNn6FFHKnlTylqkJ5eeKWF7L8DU4PlY2ZnX195kGvPg/exec"; // REQUIRED: paste your Google Apps Script Web app URL here (it sends the real OTP emails)
 function api(o){if(!BACKEND_URL)return Promise.resolve(null);return fetch(BACKEND_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(o)}).then(function(r){return r.json()}).catch(function(){return null})}
 function $(i){return document.getElementById(i)}
 function go(id){document.querySelector('.app').classList.toggle('wide',id==='admin');document.querySelectorAll('.scr').forEach(function(s){s.classList.toggle('on',s.id==='s-'+id)})}
