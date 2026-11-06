@@ -169,8 +169,8 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--blue);outline-of
 <ul><li>Turn smart ideas into real-world solutions</li><li>Build a community of young makers</li><li>Bridge classroom theory and industry skills</li></ul></div></div></section>
 <section class="scr" id="s-contact"><div class="card" style="margin-top:0"><div class="bar"><button class="lk" data-go="home">← Back</button><b>Contact Us</b></div><div class="tiles" id="ctl" style="grid-template-columns:1fr"></div><p class="sub" id="cdl" style="margin-top:12px;text-align:center"></p><p class="pl"><a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a></p></div></section>
 <section class="scr" id="s-admin"><div class="card" style="margin-top:0"><div class="bar"><button class="lk" id="ab">← Back</button><b>Admin Dashboard</b></div>
-<div id="alk"><p class="sub">Only the owner can see user and booking data. Enter the admin password.</p>
-<label for="ap">Admin password</label><input id="ap" type="password" autocomplete="current-password" placeholder="Admin password"><label class="pw-note" style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" id="aps" style="width:auto;margin:0"> Show password</label><p class="err" id="ae"></p><button class="btn" id="al">Open Dashboard</button>
+<div id="alk"><p class="sub">Only the Founder and Co-Founder can see user and booking data. Enter your admin user ID and password.</p>
+<label for="aid">Admin user ID</label><input id="aid" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Admin user ID"><label for="ap">Admin password</label><input id="ap" type="password" autocomplete="current-password" placeholder="Admin password"><label class="pw-note" style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" id="aps" style="width:auto;margin:0"> Show password</label><p class="err" id="ae"></p><button class="btn" id="al">Open Dashboard</button>
 <div class="setup" id="an" hidden><b>Server not connected yet. One-time setup (free):</b><ol><li>Create a Google Sheet, then <b>Extensions → Apps Script</b>.</li><li>Paste the file <b>innovsteck-backend.gs</b>, save, choose <b>setup</b> and press <b>Run</b> (allow permissions).</li><li><b>Project Settings → Script properties</b>: add <b>ADMIN_PASSWORD</b> with your own strong password.</li><li><b>Deploy → New deployment → Web app</b>: run as <i>Me</i>, access <i>Anyone</i>. Copy the URL.</li><li>Paste that URL into <b>BACKEND_URL</b> in index.html and upload it again.</li></ol></div></div>
 <div id="adb" hidden><div class="chips" id="at"></div><div id="ac"></div><p class="err" id="as" style="color:var(--muted)"></p><input id="aq" type="search" placeholder="Search…" hidden><div id="av"></div><div style="display:flex;gap:10px;margin-top:14px"><button class="btn o" id="ar">Refresh</button><button class="btn o" id="ax">Exit</button></div></div></div></section>
 </main>
@@ -181,7 +181,8 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--blue);outline-of
 var WEBSITE=""; // set in Admin > Settings > Website link
 var KEY="innovsteck_user";
 var BACKEND_URL="https://script.google.com/macros/s/AKfycbzDMA34uYlZqW5G29_s79anto6XNn6FFHKnlTylqkJ5eeKWF7L8DU4PlY2ZnX195kGvPg/exec"; // REQUIRED: paste your Google Apps Script Web app URL here (it sends the real OTP emails)
-function api(o){if(!BACKEND_URL)return Promise.resolve(null);return fetch(BACKEND_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(o)}).then(function(r){return r.json()}).catch(function(){return null})}
+var APID='';
+function api(o){if(!BACKEND_URL)return Promise.resolve(null);if(o&&o.password!==undefined&&APID)o.adminId=APID;return fetch(BACKEND_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(o)}).then(function(r){return r.json()}).catch(function(){return null})}
 function $(i){return document.getElementById(i)}
 function go(id){document.querySelector('.app').classList.toggle('wide',id==='admin');document.querySelectorAll('.scr').forEach(function(s){s.classList.toggle('on',s.id==='s-'+id)})}
 function store(a,v){try{if(a==='get')return localStorage.getItem(KEY);if(a==='set')localStorage.setItem(KEY,v);if(a==='del')localStorage.removeItem(KEY)}catch(e){}return null}
@@ -321,6 +322,7 @@ document.querySelector('[data-go="book"]').addEventListener('click',bookInfo);
 $('bs').addEventListener('click',function(){var v=$('bp').value,pn=v=='c'?'Custom project (my own idea)':(PJ(v)||{name:v}).name;
  var t='Hi Innovsteck, I want to book a project.\nName: '+U.name+'\nEmail: '+U.email+'\nProject: '+pn+'\nNeed: '+$('bt').value+'\nCourse: '+$('bl').value+'\nCollege: '+($('bc').value||'-')+'\nMessage: '+($('bm').value||'-');
  chk(api({action:'booking',token:U.token,project:pn,need:$('bt').value,course:$('bl').value,college:$('bc').value,message:$('bm').value}));window.open('https://wa.me/'+C.s.wa+'?text='+encodeURIComponent(t),'_blank')});
+var ADMIN_IDS=['sanket_gadhave','tanuja_aher'];
 var AD=null,APW='',TP=null,tab='projects',aq='',EP=null,EI=-1;
 var HD={users:['Name','Email','Registered','Last login','Last logout','Status','Logins','Mobile'],bookings:['Time','Name','Email','Project','Need','Course','College','Message'],enquiries:['Time','Name','Email','Project','Message'],activity:['Time','Name','Email','Event']};
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
@@ -390,13 +392,13 @@ if(t.id=='f-vf'&&t.files[0]){readForm();t.disabled=true;upVid(t.files[0],functio
 if(t.id=='d-f'&&t.files[0]){var ff=t.files[0],dt=$('d-t').value.trim()||ff.name,dd=$('d-d').value.trim();t.disabled=true;upVid(ff,function(u){C.docs.push({t:dt,u:u,d:dd});saveC()},function(){t.disabled=false;t.value=''},'file')}
 if(t.id=='f-ph'){readForm();var fs=[].slice.call(t.files),n=0;fs.forEach(function(f){img(f,function(d){EP.photos.push(d);if(++n==fs.length)drawA()})})}
 if(t.id=='g-f'&&t.files[0]){var ti=$('g-t').value.trim()||'Project photo';img(t.files[0],function(d){C.gallery.push({t:ti,img:d});saveC()})}});
-function adminLock(){AD=null;TP=null;$('ap').type='password';$('aps').checked=false;APW='';EP=null;$('alk').hidden=false;$('adb').hidden=true;$('ap').value='';$('ae').textContent='';$('an').hidden=!!BACKEND_URL}
+function adminLock(){AD=null;TP=null;$('ap').type='password';$('aps').checked=false;APW='';APID='';$('aid').value='';EP=null;$('alk').hidden=false;$('adb').hidden=true;$('ap').value='';$('ae').textContent='';$('an').hidden=!!BACKEND_URL}
 function adminLoad(){return api({action:'admin_list',password:APW}).then(function(r){if(!r){$('ae').textContent='Could not reach the server.';return false}if(!r.ok){$('ae').textContent=r.error||'Wrong password.';return false}r.enquiries=r.enquiries||[];AD=r;return true})}
 $('aps').addEventListener('change',function(){$('ap').type=this.checked?'text':'password'});
-$('al').addEventListener('click',function(){var b=this;APW=$('ap').value;if(!APW){$('ae').textContent='Enter the admin password.';return}
+$('al').addEventListener('click',function(){var b=this;APID=$('aid').value.trim().toLowerCase();APW=$('ap').value;if(!APID){$('ae').textContent='Enter the admin user ID.';return}if(ADMIN_IDS.indexOf(APID)<0){$('ae').textContent='User not found.';APID='';return}if(!APW){$('ae').textContent='Enter the admin password.';return}
 if(!BACKEND_URL){$('ae').textContent='Database not connected yet. See the setup steps below.';return}
 b.disabled=true;$('ae').textContent='Checking…';
-adminLoad().then(function(ok){b.disabled=false;if(ok){$('ae').textContent='';$('alk').hidden=true;$('adb').hidden=false;drawA()}else APW=''})});
+adminLoad().then(function(ok){b.disabled=false;if(ok){$('ae').textContent='';$('alk').hidden=true;$('adb').hidden=false;drawA()}else{APW='';APID=''}})});
 $('ar').addEventListener('click',function(){adminLoad().then(function(ok){if(ok)drawA();else adminLock()})});
 $('ax').addEventListener('click',function(){adminLock();var s=store('get');if(s){try{home();return}catch(e){}}go('login')});
 $('ab').addEventListener('click',function(){$('ax').click()});
